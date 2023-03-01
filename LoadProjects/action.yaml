@@ -1,0 +1,31 @@
+name: Load Projects to Build
+author: Microsoft Corporation
+inputs:
+  shell:
+    description: Shell in which you want to run the action (powershell or pwsh)
+    required: false
+    default: powershell
+  parentTelemetryScopeJson:
+    description: Specifies the parent telemetry scope for the telemetry signal
+    required: false
+    default: '7b7d'
+outputs:
+  ProjectsJson:
+    description: An array of AL-Go projects in compressed JSON format
+    value: ${{ steps.loadProjects.outputs.ProjectsJson }}
+  ProjectDependenciesJson:
+    description: An object that holds the project dependencies in compressed JSON format
+    value: ${{ steps.loadProjects.outputs.ProjectDependenciesJson }}
+  BuildOrderJson: 
+    description: An array of objects that determine that build order, including build dimensions
+    value: ${{ steps.LoadProjects.outputs.BuildOrderJson }}
+runs:
+  using: composite
+  steps:
+    - name: run
+      shell: ${{ inputs.shell }}
+      id: loadProjects
+      run: try { ${{ github.action_path }}/LoadProjects.ps1 -token ${{ github.token }} -parentTelemetryScopeJson ${{ inputs.parentTelemetryScopeJson }} } catch { Write-Host "::Error::Unexpected error when running action ($($_.Exception.Message.Replace("`r",'').Replace("`n",' ')))"; exit 1 }
+branding:
+  icon: terminal
+  color: blue
